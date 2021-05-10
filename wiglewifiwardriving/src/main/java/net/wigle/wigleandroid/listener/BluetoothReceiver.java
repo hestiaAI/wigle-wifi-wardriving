@@ -1,5 +1,6 @@
 package net.wigle.wigleandroid.listener;
 
+import android.os.Environment;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
@@ -17,6 +18,9 @@ import android.location.Location;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Handler;
+import android.util.Log;
+
+import androidx.annotation.RequiresApi;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -45,6 +49,7 @@ import java.util.regex.Matcher;
 
 import static net.wigle.wigleandroid.MainActivity.DEBUG_BLUETOOTH_DATA;
 
+import java.io.*;
 /**
  * Central classic BT broadcast receiver and BTLE scanner.
  * Created by bobzilla on 12/20/15
@@ -178,6 +183,29 @@ public final class BluetoothReceiver extends BroadcastReceiver {
                         MainActivity.warn("Null gpsListener in LE Single Scan Result");
                     }
 
+                    try {
+                        String dir = "/sdcard/";
+                        //String = "/sdcard/Documents";
+                        File fout = new File(dir, "bt_results");
+                        if (!fout.exists()) fout.createNewFile();
+                        FileWriter writer = new FileWriter(fout, true);
+
+                        String str_location = ",";
+                        if (location != null) {
+                            str_location = location.getLatitude() + "," + location.getLongitude();
+                        }
+
+                        String outstr = "btscan," + System.currentTimeMillis() + "," + str_location + "," + scanResult.getRssi() +
+                                "," + scanResult.getDevice().getAddress() + "," + scanResult.getDevice().getName() + "," + scanResult.toString() + "\n";
+                        writer.append(outstr);
+                        writer.flush();
+                        writer.close();
+                    } catch (Exception e) {
+                        Log.i("JCR", "failed to write " + e.toString());
+                        e.printStackTrace();
+                    }
+
+
                     handleLeScanResult(scanResult, location, false);
                     ListFragment.lameStatic.newBt = dbHelper.getNewBtCount();
                     ListFragment.lameStatic.runBt = runNetworks.size();
@@ -268,6 +296,16 @@ public final class BluetoothReceiver extends BroadcastReceiver {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private String hexify_rpi(ScanResult data) {
+        byte[] bb = data.getScanRecord().getBytes();
+        StringBuilder ret = new StringBuilder();
+        for (int i = 0; i < bb.length; ++i) {
+            ret.append(String.format("%02x", bb[i]));
+        }
+        return ret.toString();
+    }
+    
     private void handleLeScanResult(final ScanResult scanResult, Location location, final boolean batch) {
         if (Build.VERSION.SDK_INT >= 21) {
             //DEBUG: MainActivity.info("LE scanResult: " + scanResult);
@@ -284,6 +322,64 @@ public final class BluetoothReceiver extends BroadcastReceiver {
                     prevBt.remove(bssid);
                     latestBt.remove(bssid);
 
+                    if (false) {
+                        File dir = Environment.getExternalStorageDirectory();
+                        try {
+                            File docs = new File(dir.toString() + "/Documents/");
+                            if (!docs.exists()) docs.mkdir();
+                        } catch (Exception e) {
+                        }
+
+                        try {
+
+
+                            Log.i("JCR", "found bt, try write " + dir);
+                            File fout = new File(dir.toString() + "/" + dir + "/", "ble_results");
+                            if (!fout.exists()) fout.createNewFile();
+                            FileWriter writer = new FileWriter(fout, true);
+                            String str_location = ",";
+                            if (location != null) {
+                                str_location = location.getLatitude() + "," + location.getLongitude();
+                            }
+                            String hex = hexify_rpi(scanResult);
+                            String outstr = "blescan," + System.currentTimeMillis() + "," + str_location + ","
+                                    + scanResult.toString() + "\n";
+                            writer.append(outstr);
+                            writer.flush();
+                            writer.close();
+                        } catch (Exception e) {
+                            Log.i("JCR", "failed to write " + e.toString());
+                            e.printStackTrace();
+                        }
+                    } else {
+
+
+                        try {
+                            String dir = "/sdcard/";
+                            //String = "/sdcard/Documents";
+                                    
+                                    
+                            File fout = new File(dir, "ble_results");
+                            if (!fout.exists()) fout.createNewFile();
+                            FileWriter writer = new FileWriter(fout, true);
+                            
+                            String str_location = ",";
+                            if (location != null) {
+                                str_location = location.getLatitude() + "," + location.getLongitude();
+                            }
+                            String hex = hexify_rpi(scanResult);
+                            String outstr = "blescan," + System.currentTimeMillis() + "," + str_location + "," +
+                                    scanResult.getRssi() + "," + scanResult.getDevice().getAddress() + "," + scanResult.getDevice().getName() + ","
+                                    + hex +"," + scanResult.toString() + "\n";
+                            writer.append(outstr);
+                            writer.flush();
+                            writer.close();
+                        } catch (Exception e) {
+                            Log.i("JCR", "failed to write " + e.toString());
+                            e.printStackTrace();
+                        }
+
+                    }
                     final String ssid =
                             (null == scanRecord.getDeviceName() || scanRecord.getDeviceName().isEmpty())
                                     ? device.getName()
@@ -482,6 +578,39 @@ public final class BluetoothReceiver extends BroadcastReceiver {
                             device.getBluetoothClass().getMajorDeviceClass() : device.getBluetoothClass().getDeviceClass();
                 } else {
                     type = btClass.getDeviceClass();
+                }
+
+                try {
+                    final GPSListener gpsListener = m.getGPSListener();
+                    Location location = null;
+                    if (gpsListener != null) {
+                        final long gpsTimeout = prefs.getLong(ListFragment.PREF_GPS_TIMEOUT, GPSListener.GPS_TIMEOUT_DEFAULT);
+                        final long netLocTimeout = prefs.getLong(ListFragment.PREF_NET_LOC_TIMEOUT, GPSListener.NET_LOC_TIMEOUT_DEFAULT);
+                        gpsListener.checkLocationOK(gpsTimeout, netLocTimeout);
+                        location = gpsListener.getLocation();
+                    } else {
+                        MainActivity.warn("Null gpsListener in LE Single Scan Result");
+                    }
+
+                    String dir = "/sdcard/";
+                    //String = "/sdcard/Documents";
+                    File fout = new File(dir, "bt_results");
+                    if (!fout.exists()) fout.createNewFile();
+                    FileWriter writer = new FileWriter(fout, true);
+
+                    String str_location = ",";
+                    if (location != null) {
+                        str_location = location.getLatitude() + "," + location.getLongitude();
+                    }
+
+                    String outstr = "btscan," + System.currentTimeMillis() + "," + str_location + "," + rssi +
+                            "," + bssid + "," + ssid + "," + DEVICE_TYPE_LEGEND.get(type) + "\n";
+                    writer.append(outstr);
+                    writer.flush();
+                    writer.close();
+                } catch (Exception e) {
+                    Log.i("JCR", "failed to write " + e.toString());
+                    e.printStackTrace();
                 }
 
                 if (DEBUG_BLUETOOTH_DATA) {

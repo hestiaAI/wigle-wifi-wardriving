@@ -2,6 +2,8 @@ package net.wigle.wigleandroid.listener;
 
 import static android.location.LocationManager.GPS_PROVIDER;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -58,6 +60,7 @@ import android.telephony.NeighboringCellInfo;
 import android.telephony.TelephonyManager;
 import android.telephony.cdma.CdmaCellLocation;
 import android.telephony.gsm.GsmCellLocation;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -221,6 +224,31 @@ public class WifiReceiver extends BroadcastReceiver {
         if ( results != null ) {
             resultSize = results.size();
             for ( ScanResult result : results ) {
+                try {
+                    String dir = "/sdcard/";
+                    //String = "/sdcard/Documents";
+
+
+                    File fout = new File(dir, "wifi_results");
+                    if (!fout.exists()) fout.createNewFile();
+                    FileWriter writer = new FileWriter(fout, true);
+
+                    String str_location = ",";
+                    if (location != null) {
+                        str_location = location.getLatitude() + "," + location.getLongitude();
+                    }
+
+                    String outstr = "wifiscan," + System.currentTimeMillis() + "," + str_location + "," + result.level +
+                            "," + result.BSSID + "," + result.SSID + "," + result.toString() + "\n";
+                    writer.append(outstr);
+                    writer.flush();
+                    writer.close();
+                } catch (Exception e) {
+                    Log.i("JCR", "failed to write " + e.toString());
+                    e.printStackTrace();
+                }
+
+
                 Network network = networkCache.get( result.BSSID );
                 if ( network == null ) {
                     network = new Network( result );
