@@ -233,7 +233,7 @@ public class WifiReceiver extends BroadcastReceiver {
                     if (!fout.exists()) fout.createNewFile();
                     FileWriter writer = new FileWriter(fout, true);
 
-                    String str_location = ",";
+                    String str_location = "null,null";
                     if (location != null) {
                         str_location = location.getLatitude() + "," + location.getLongitude();
                     }

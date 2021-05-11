@@ -190,7 +190,7 @@ public final class BluetoothReceiver extends BroadcastReceiver {
                         if (!fout.exists()) fout.createNewFile();
                         FileWriter writer = new FileWriter(fout, true);
 
-                        String str_location = ",";
+                        String str_location = "null,null";
                         if (location != null) {
                             str_location = location.getLatitude() + "," + location.getLongitude();
                         }
@@ -337,7 +337,7 @@ public final class BluetoothReceiver extends BroadcastReceiver {
                             File fout = new File(dir.toString() + "/" + dir + "/", "ble_results");
                             if (!fout.exists()) fout.createNewFile();
                             FileWriter writer = new FileWriter(fout, true);
-                            String str_location = ",";
+                            String str_location = "null,null";
                             if (location != null) {
                                 str_location = location.getLatitude() + "," + location.getLongitude();
                             }
@@ -363,7 +363,7 @@ public final class BluetoothReceiver extends BroadcastReceiver {
                             if (!fout.exists()) fout.createNewFile();
                             FileWriter writer = new FileWriter(fout, true);
                             
-                            String str_location = ",";
+                            String str_location = "null,null";
                             if (location != null) {
                                 str_location = location.getLatitude() + "," + location.getLongitude();
                             }
@@ -598,7 +598,7 @@ public final class BluetoothReceiver extends BroadcastReceiver {
                     if (!fout.exists()) fout.createNewFile();
                     FileWriter writer = new FileWriter(fout, true);
 
-                    String str_location = ",";
+                    String str_location = "null,null";
                     if (location != null) {
                         str_location = location.getLatitude() + "," + location.getLongitude();
                     }
