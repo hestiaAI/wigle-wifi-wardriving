@@ -215,7 +215,7 @@ public class KmlWriter extends AbstractBackgroundTask {
                 if (capabilities.contains("WPA")) {
                     style = "red";
                 }
-            } else if (NetworkType.BLE.equals(type)) {
+            } else if (NetworkType.BLE.equals(type) || NetworkType.BLEGAEN.equals(type)) {
                 style = "ltblue";
             } else if (NetworkType.BT.equals(type)) {
                 style = "blue";
@@ -278,7 +278,7 @@ public class KmlWriter extends AbstractBackgroundTask {
                 ObservationUploader.writeFos(fos, "<coordinates>" + lastlon + "," + lastlat + "</coordinates>");
                 ObservationUploader.writeFos(fos, "</Point>\n</Placemark>\n");
 
-            } else if (type.equals(NetworkType.BT) || type.equals(NetworkType.BLE)) {
+            } else if (type.equals(NetworkType.BT) || type.equals(NetworkType.BLE) || type.equals(NetworkType.BLEGAEN)) {
                 ObservationUploader.writeFos(fos, "<Placemark>\n<name><![CDATA[");
                 fos.write(ssidFiltered);
                 ObservationUploader.writeFos(fos, "]]></name>\n");

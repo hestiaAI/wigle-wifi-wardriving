@@ -94,7 +94,8 @@ public final class FilterMatcher {
                         MainActivity.error("unhandled crypto: " + network);
                 }
             } else if (NetworkType.BT.equals(network.getType()) ||
-                    NetworkType.BLE.equals(network.getType())) {
+                    NetworkType.BLE.equals(network.getType()) ||
+                    NetworkType.BLEGAEN.equals( network.getType() ) ) {
                 if (!prefs.getBoolean(prefix + ListFragment.PREF_MAPF_BT, true)) {
                     return false;
                 }

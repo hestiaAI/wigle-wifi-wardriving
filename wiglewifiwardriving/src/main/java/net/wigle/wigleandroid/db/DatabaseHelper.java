@@ -819,7 +819,9 @@ public final class DatabaseHelper extends Thread {
             newNetworkCount.incrementAndGet();
             if ( NetworkType.WIFI.equals( network.getType() ) ) {
                 newWifiCount.incrementAndGet();
-            } else if ( NetworkType.BT.equals( network.getType() ) || NetworkType.BLE.equals( network.getType() ) ) {
+            } else if ( NetworkType.BT.equals( network.getType() ) ||
+                    NetworkType.BLE.equals( network.getType() ) ||
+                    NetworkType.BLEGAEN.equals( network.getType() ) ) {
                 newBtCount.incrementAndGet();
             } else if ( NetworkType.NFC.equals( network.getType() ) ) {
                 //TODO:

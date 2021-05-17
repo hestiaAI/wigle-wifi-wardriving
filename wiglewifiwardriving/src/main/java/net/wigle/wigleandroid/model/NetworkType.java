@@ -11,6 +11,7 @@ public enum NetworkType {
     WCDMA("D"),
     BT("B"),
     BLE("E"),
+    BLEGAEN("S"),
     NFC("N");
 
     private static final Map<String,NetworkType> types = new HashMap<>();

@@ -172,6 +172,8 @@ public class NetworkListUtil {
             resource = drawable.ic_bt;
         } else if (NetworkType.BLE.equals(network.getType())) {
             resource = drawable.ic_btle;
+        }else if (NetworkType.BLEGAEN.equals(network.getType())){
+            resource = drawable.ic_btle_gaen;
         } else {
             resource = drawable.ic_cell;
         }

@@ -444,9 +444,22 @@ public final class BluetoothReceiver extends BroadcastReceiver {
                         final SharedPreferences prefs = mainActivity.get()
                                 .getSharedPreferences(ListFragment.SHARED_PREFS, 0);
                         //ALIBI: shamelessly re-using frequency here for device type.
+
+                        NetworkType networkType = NetworkType.BLE;
+                        try{
+                            String uuid_subsequence =
+                                    String.valueOf(scanRecord.getServiceUuids().get(0).getUuid().toString().subSequence(4, 8));
+                            if (uuid_subsequence.equals("fd6f")) {
+                                //Log.d("GAEN message", String.valueOf(scanRecord.getServiceUuids().get(0).getUuid().toString().subSequence(4,8)));
+                                networkType = NetworkType.BLEGAEN;
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
                         final Network network = addOrUpdateBt(bssid, ssid, type, capabilities,
                                 scanResult.getRssi(),
-                                NetworkType.BLE, location, prefs, batch);
+                                networkType, location, prefs, batch);
                     }
                 }
             } catch (SecurityException se) {
@@ -867,7 +880,7 @@ public final class BluetoothReceiver extends BroadcastReceiver {
             //DEBUG: MainActivity.info("new BT net: "+bssid + "(new: "+newForRun+")");
             network = new Network(bssid, ssid, frequency, capabilities, strength, type);
             networkCache.put(bssid, network);
-        } else if (NetworkType.BLE.equals(type) && NetworkType.BT.equals(network.getType())) {
+        } else if ((NetworkType.BLE.equals(type) || NetworkType.BLEGAEN.equals(type)) && NetworkType.BT.equals(network.getType())) {
             //ALIBI: detected via standard bluetooth, updated as LE (LE should win)
             //DEBUG: MainActivity.info("had a BC record, moving to BLE: "+network.getBssid()+ "(new: "+newForRun+")");
             String mergedSsid = (ssid == null || ssid.isEmpty()) ? network.getSsid() : ssid;
@@ -881,8 +894,10 @@ public final class BluetoothReceiver extends BroadcastReceiver {
             btTypeUpdate = true;
             network.setFrequency(mergedDeviceType);
             network.setLevel(strength);
-            network.setType(NetworkType.BLE);
-        } else if (NetworkType.BT.equals(type) && NetworkType.BLE.equals(network.getType())) {
+            network.setType(type);
+        } else if (NetworkType.BT.equals(type) &&
+                (NetworkType.BLE.equals(network.getType()) ||
+                NetworkType.BLEGAEN.equals(network.getType()))) {
             //fill in device type if not present
             //DEBUG: MainActivity.info("had a BLE record, got BC: "+network.getBssid() + "(new: "+newForRun+")");
             int mergedDeviceType = (!isMiscOrUncategorized(network.getFrequency())?network.getFrequency():frequency);
@@ -941,13 +956,15 @@ public final class BluetoothReceiver extends BroadcastReceiver {
                         if (batch) {
                             if (NetworkType.BT.equals(network.getType())) {
                                 listAdapter.enqueueBluetooth(network);
-                            } else if (NetworkType.BLE.equals(network.getType())) {
+                            } else if (NetworkType.BLE.equals(network.getType()) ||
+                                    NetworkType.BLEGAEN.equals(network.getType())) {
                                 listAdapter.enqueueBluetoothLe(network);
                             }
                         } else {
                             if (NetworkType.BT.equals(network.getType())) {
                                 listAdapter.addBluetooth(network);
-                            } else if (NetworkType.BLE.equals(network.getType())) {
+                            } else if (NetworkType.BLE.equals(network.getType()) ||
+                                    NetworkType.BLEGAEN.equals(network.getType())) {
                                 listAdapter.addBluetoothLe(network);
                             }
                         }
